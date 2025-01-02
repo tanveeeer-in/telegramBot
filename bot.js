@@ -5,12 +5,22 @@ require("dotenv").config();
 
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
-bot.on("message", (msg) => {
-  const chatId = msg.chat.id;
-  bot.sendMessage(chatId, "Received your message");
-});
+const adminChatId = process.env.ADMIN_CHAT_ID;
+console.log("Admin chat ID:", adminChatId);
+
+const authorizedUser = (msg) => {
+  const userId = msg.from.id;
+  if (!adminChatId.includes(userId)) {
+    bot.sendMessage(chatId, "You are not authorized to upload files.");
+    return;
+  }
+};
+
 const handleFileUpload = (msg, fileId, fileName = "File") => {
   const chatId = msg.chat.id;
+  authorizedUser(msg);
+  console.log(msg);
+
   const uniqueId = uuidv4();
 
   db.run(
@@ -29,6 +39,12 @@ const handleFileUpload = (msg, fileId, fileName = "File") => {
     }
   );
 };
+
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id;
+  authorizedUser(msg);
+  bot.sendMessage(chatId, "Received your message");
+});
 
 // Handle documents
 bot.on("document", (msg) => {
@@ -75,22 +91,28 @@ bot.onText(/\/getfile_(.+)/, (msg, match) => {
       // Determine the file type based on its metadata
       if (file_name === "Image") {
         // Handle photos
-        bot.sendPhoto(chatId, file_id).catch((err) => {
-          console.error("Error sending photo:", err);
-          bot.sendMessage(chatId, "Failed to send the photo.");
-        });
+        bot
+          .sendPhoto(chatId, file_id, { protect_content: true })
+          .catch((err) => {
+            console.error("Error sending photo:", err);
+            bot.sendMessage(chatId, "Failed to send the photo.");
+          });
       } else if (file_name === "Video") {
         // Handle videos
-        bot.sendVideo(chatId, file_id).catch((err) => {
-          console.error("Error sending video:", err);
-          bot.sendMessage(chatId, "Failed to send the video.");
-        });
+        bot
+          .sendVideo(chatId, file_id, { protect_content: true })
+          .catch((err) => {
+            console.error("Error sending video:", err);
+            bot.sendMessage(chatId, "Failed to send the video.");
+          });
       } else {
         // Handle documents or other files
-        bot.sendDocument(chatId, file_id).catch((err) => {
-          console.error("Error sending document:", err);
-          bot.sendMessage(chatId, "Failed to send the document.");
-        });
+        bot
+          .sendDocument(chatId, file_id, { protect_content: true })
+          .catch((err) => {
+            console.error("Error sending document:", err);
+            bot.sendMessage(chatId, "Failed to send the document.");
+          });
       }
     }
   );
