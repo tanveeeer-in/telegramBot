@@ -258,3 +258,81 @@ bot.on("callback_query", (query) => {
 
   bot.answerCallbackQuery(query.id);
 });
+
+bot.onText(/\/listfiles/, (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+
+  if (!adminChatId.includes(userId)) {
+    bot.sendMessage(chatId, "You are not authorized to view the files.");
+    return;
+  }
+
+  db.all(`SELECT * FROM files`, [], (err, rows) => {
+    if (err) {
+      console.log("Error fetching files:", err);
+      bot.sendMessage(chatId, "An error occurred while fetching the files.");
+      return;
+    }
+
+    if (rows.length === 0) {
+      bot.sendMessage(chatId, "No files found.");
+      return;
+    }
+
+    const inlineKeyboard = rows.map((row) => [
+      {
+        text: `Delete: ${row.file_name}`,
+        callback_data: `delete_${row.id}`,
+      },
+    ]);
+    bot.sendMessage(chatId, "Here are the files:", {
+      reply_markup: {
+        inline_keyboard: inlineKeyboard,
+      },
+    });
+  });
+});
+
+bot.on("callback_query", (query) => {
+  const chatId = query.message.chat.id;
+  const data = query.data;
+
+  const fileId = data.split("_")[1];
+  if (data.startsWith("delete_")) {
+    bot.sendMessage(chatId, "Are you sure you want to delete this file?", {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Yes",
+              callback_data: `confirm_delete_${fileId}`,
+            },
+            {
+              text: "No",
+              callback_data: "cancel_delete",
+            },
+          ],
+        ],
+      },
+    });
+  } else if (data.startsWith("confirm_delete_")) {
+    db.run(`DELETE FROM files WHERE id = ?`, [fileId], (err) => {
+      if (err) {
+        console.error("Error deleting file:", err);
+        bot.sendMessage(chatId, "An error occurred while deleting the file.");
+        return;
+      }
+      if (this.changes === 0) {
+        bot.sendMessage(chatId, "No files found.");
+        return;
+      } else {
+        bot.sendMessage(chatId, "File deleted successfully.");
+      }
+    });
+  } else if (data === "cancel_delete") {
+    bot.sendMessage(chatId, "Deletion cancelled.");
+  }
+
+  bot.answerCallbackQuery(query.id);
+});
