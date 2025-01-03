@@ -135,7 +135,25 @@ bot.onText(/\/getfile_(.+)/, (msg, match) => {
       } else {
         bot.sendMessage(
           chatId,
-          "You need to join the channel to access the file. Please join the channel and try again. channel link: https://t.me/Demon_Slayer_season_1_2_3_4_anim"
+          "You need to join the channel to access the file. Please join the channel and try again. channel link.",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "Join Channel",
+                    url: "https://t.me/Demon_Slayer_season_1_2_3_4_anim",
+                  },
+                ],
+                [
+                  {
+                    text: "Try Again",
+                    callback_data: `retry_getfile_${uniqueId}`,
+                  },
+                ],
+              ],
+            },
+          }
         );
       }
     })
@@ -149,59 +167,94 @@ bot.onText(/\/getfile_(.+)/, (msg, match) => {
   // Query the database for the file
 });
 
-// bot.onText(/\/getfile_(.+)/, (msg, match) => {
-//   const chatId = msg.chat.id;
-//   const uniqueId = match[1];
+bot.on("callback_query", (query) => {
+  const chatId = query.message.chat.id;
+  const data = query.data;
 
-//   console.log("User is a member of the channel");
-//   db.get(
-//     `SELECT file_id, file_name FROM files WHERE id = ?`,
-//     [uniqueId],
-//     (err, row) => {
-//       if (err) {
-//         console.error("Database error:", err);
-//         bot.sendMessage(
-//           chatId,
-//           "An error occurred while retrieving the file. Please try again."
-//         );
-//         return;
-//       }
+  if (data.startsWith("retry_getfile_")) {
+    const uniqueId = data.split("_")[2];
 
-//       if (!row) {
-//         bot.sendMessage(chatId, "Invalid or expired link.");
-//         return;
-//       }
+    bot.getChatMember(channelChatId, query.from.id).then((data) => {
+      if (
+        data.status === "member" ||
+        data.status === "administrator" ||
+        data.status === "creator"
+      ) {
+        console.log("User is a member of the channel");
+        db.get(
+          `SELECT file_id, file_name FROM files WHERE id = ?`,
+          [uniqueId],
+          (err, row) => {
+            if (err) {
+              console.error("Database error:", err);
+              bot.sendMessage(
+                chatId,
+                "An error occurred while retrieving the file. Please try again."
+              );
+              return;
+            }
 
-//       const { file_id, file_name } = row;
+            if (!row) {
+              bot.sendMessage(chatId, "Invalid or expired link.");
+              return;
+            }
 
-//       // Determine the file type based on its metadata
-//       if (file_name === "Image") {
-//         // Handle photos
-//         bot
-//           .sendPhoto(chatId, file_id, { protect_content: true })
-//           .catch((err) => {
-//             console.error("Error sending photo:", err);
-//             bot.sendMessage(chatId, "Failed to send the photo.");
-//           });
-//       } else if (file_name === "Video") {
-//         // Handle videos
-//         bot
-//           .sendVideo(chatId, file_id, { protect_content: true })
-//           .catch((err) => {
-//             console.error("Error sending video:", err);
-//             bot.sendMessage(chatId, "Failed to send the video.");
-//           });
-//       } else {
-//         // Handle documents or other files
-//         bot
-//           .sendDocument(chatId, file_id, { protect_content: true })
-//           .catch((err) => {
-//             console.error("Error sending document:", err);
-//             bot.sendMessage(chatId, "Failed to send the document.");
-//           });
-//       }
-//     }
-//   );
+            const { file_id, file_name } = row;
 
-//   // Query the database for the file
-// });
+            // Determine the file type based on its metadata
+            if (file_name === "Image") {
+              // Handle photos
+              bot
+                .sendPhoto(chatId, file_id, { protect_content: true })
+                .catch((err) => {
+                  console.error("Error sending photo:", err);
+                  bot.sendMessage(chatId, "Failed to send the photo.");
+                });
+            } else if (file_name === "Video") {
+              // Handle videos
+              bot
+                .sendVideo(chatId, file_id, { protect_content: true })
+                .catch((err) => {
+                  console.error("Error sending video:", err);
+                  bot.sendMessage(chatId, "Failed to send the video.");
+                });
+            } else {
+              // Handle documents or other files
+              bot
+                .sendDocument(chatId, file_id, { protect_content: true })
+                .catch((err) => {
+                  console.error("Error sending document:", err);
+                  bot.sendMessage(chatId, "Failed to send the document.");
+                });
+            }
+          }
+        );
+      } else {
+        bot.sendMessage(
+          chatId,
+          "You need to join the channel to access the file. Please join the channel and try again. channel link.",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "Join Channel",
+                    url: "https://t.me/Demon_Slayer_season_1_2_3_4_anim",
+                  },
+                ],
+                [
+                  {
+                    text: "Try Again",
+                    callback_data: `retry_getfile_${uniqueId}`,
+                  },
+                ],
+              ],
+            },
+          }
+        );
+      }
+    });
+  }
+
+  bot.answerCallbackQuery(query.id);
+});
