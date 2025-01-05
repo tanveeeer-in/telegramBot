@@ -106,7 +106,7 @@ bot.onText(/\/getfile_(.+)/, (msg, match) => {
 
             // Determine the file type based on its metadata
             if (file_name === "Image") {
-              // Handle photos
+              // Handle photos.
               bot
                 .sendPhoto(chatId, file_id, { protect_content: true })
                 .catch((err) => {
