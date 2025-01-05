@@ -14,8 +14,9 @@ const authorizedUser = (msg) => {
   const userId = msg.from.id;
   if (!adminChatId.includes(userId)) {
     bot.sendMessage(msg.chat.id, "You are not authorized to upload files.");
-    return;
+    return false;
   }
+  return true;
 };
 
 const handleFileUpload = (msg, fileId, fileName = "File") => {
@@ -336,3 +337,163 @@ bot.on("callback_query", (query) => {
 
   bot.answerCallbackQuery(query.id);
 });
+
+bot.on(/\/deletefile (.+)/, (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+
+  if (userId.toString() !== adminChatId) {
+    bot.sendMessage(chatId, "You are not authorized to delete files.");
+    return;
+  }
+  const query = match[1].trim();
+
+  const isId = /^[0-9a-fA-F-]{36}$/.test(query);
+
+  const column = isId ? "id" : "file_name";
+
+  const sql = isId
+    ? `SELECT * FROM files WHERE ${column} = ?`
+    : `SELECT * FROM files WHERE LOWER(${column}) LIKE LOWER(?)`;
+
+  const param = isId ? query : `%${query}%`;
+
+  db.all(sql, [param], function (err, rows) {
+    if (err) {
+      console.error("Database error:", err);
+      bot.sendMessage(chatId, "An error occurred while retrieving files.");
+      return;
+    }
+
+    if (rows.length === 0) {
+      bot.sendMessage(
+        chatId,
+        `No file found with the given ${isId ? "ID" : "name"}.`
+      );
+      return;
+    }
+    const fileList = rows
+      .map((row, index) => `${index + 1}. ${row.file_name} (ID: ${row.id})`)
+      .join("\n");
+
+    bot.sendMessage(
+      chatId,
+      `Found the following file(s):\n\n${fileList}\n\nConfirm deletion?`,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: "Yes, delete", callback_data: `delete_confirm_${query}` },
+              { text: "No, cancel", callback_data: `delete_cancel` },
+            ],
+          ],
+        },
+      }
+    );
+  });
+});
+
+bot.on("callback_query", (callbackQuery) => {
+  const data = callbackQuery.data;
+  const chatId = callbackQuery.message.chat.id;
+
+  if (data.startsWith("delete_confirm_")) {
+    const query = data.replace("delete_confirm_", "").trim();
+    const isId = /^[0-9a-fA-F-]{36}$/.test(query);
+
+    const column = isId ? "id" : "file_name";
+    const sql = isId
+      ? `DELETE FROM files WHERE ${column} = ?`
+      : `DELETE FROM files WHERE LOWER(${column}) LIKE LOWER(?)`;
+
+    const param = isId ? query : `%${query}%`;
+    db.run(sql, [param], function (err) {
+      if (err) {
+        console.error("Database error:", err);
+        bot.sendMessage(
+          chatId,
+          "An error occurred while deleting the file(s)."
+        );
+        return;
+      }
+
+      if (this.changes === 0) {
+        bot.sendMessage(
+          chatId,
+          `No file(s) found with the given ${isId ? "ID" : "name"}.`
+        );
+      } else {
+        bot.sendMessage(
+          chatId,
+          `Successfully deleted ${this.changes} file(s).`
+        );
+      }
+    });
+  } else if (data === "delete_cancel") {
+    bot.sendMessage(chatId, "Deletion canceled.");
+  }
+});
+
+// Delete all files with confirmation
+bot.onText(/\/deleteallfiles/, (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+
+  // Check if the user is an admin
+  if (userId.toString() !== adminChatId) {
+    bot.sendMessage(chatId, "You are not authorized to delete files.");
+    return;
+  }
+
+  // Ask for confirmation
+  bot.sendMessage(chatId, "Are you sure you want to delete all files?", {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: "Yes, delete all", callback_data: "delete_all_confirm" },
+          { text: "No, cancel", callback_data: "delete_all_cancel" },
+        ],
+      ],
+    },
+  });
+});
+
+// Handle inline button responses for delete all
+bot.on("callback_query", (callbackQuery) => {
+  const data = callbackQuery.data;
+  const chatId = callbackQuery.message.chat.id;
+
+  if (data === "delete_all_confirm") {
+    // Execute deletion of all files
+    db.run(`DELETE FROM files`, function (err) {
+      if (err) {
+        console.error("Database error during delete all:", err);
+        bot.sendMessage(chatId, "An error occurred while deleting files.");
+        return;
+      }
+
+      bot.sendMessage(
+        chatId,
+        `Successfully deleted all files (${this.changes} files).`
+      );
+    });
+  } else if (data === "delete_all_cancel") {
+    bot.sendMessage(chatId, "Deletion of all files canceled.");
+  }
+});
+
+// bot.on("callback_query", (callbackQuery) => {
+//   const chatId = callbackQuery.message.chat.id;
+//   const data = callbackQuery.data;
+
+//   if (data.startsWith("retry_getfile_")) {
+//     // Handle retry logic
+//   } else if (data.startsWith("delete_")) {
+//     // Handle delete confirmation
+//   } else if (data === "delete_all_confirm") {
+//     // Handle delete all confirmation
+//   } else if (data === "delete_all_cancel") {
+//     bot.sendMessage(chatId, "Deletion of all files canceled.");
+//   }
+//   bot.answerCallbackQuery(callbackQuery.id);
+// });
