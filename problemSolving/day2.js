@@ -1,0 +1,9 @@
+function findmissingNumber(arr, n) {
+  for (let i = 0; i < n; i++) {
+    if (i + 1 !== arr[i]) {
+      return i + 1;
+    }
+  }
+}
+
+console.log(findmissingNumber([1, 2, 3, 5], 5));
