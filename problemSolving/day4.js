@@ -7,4 +7,17 @@ function firstRepeatingElement(arr) {
     }
   }
 }
-console.log(firstRepeatingElement([10, 5, 3, 4, 3, 5, 6]));
+// console.log(firstRepeatingElement([10, 5, 3, 4, 3, 5, 6]));
+
+function firstRepeatingElementWithSet(arr) {
+  const set = new Set();
+  console.log(set);
+  for (let i = 0; i < arr.length; i++) {
+    if (set.has(arr[i])) {
+      return arr[i];
+    }
+    set.add(arr[i]);
+  }
+  return "No repeating element";
+}
+console.log(firstRepeatingElementWithSet([10, 5, 3, 4, 3, 5, 6]));

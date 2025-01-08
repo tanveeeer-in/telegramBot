@@ -3,7 +3,7 @@ function findDuplication(arr) {
 
   for (let i = 0; i < arr.length; i++) {
     for (let j = i + 1; j < arr.length; j++) {
-      if (arr[i] == arr[j]) {
+      if (arr[i] == arr[j] && !duplicate.includes(arr[i])) {
         duplicate.push(arr[i]);
       }
     }
@@ -11,4 +11,4 @@ function findDuplication(arr) {
 
   return duplicate;
 }
-console.log(findDuplication([4, 3, 2, 7, 8, 2, 3,2 ,2,1]));
+console.log(findDuplication([4, 3, 2, 7, 8, 2, 3, 2, 2, 1]));
