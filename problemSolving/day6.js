@@ -1,5 +1,5 @@
 function insertionSorting() {
-  let arr = [29, 10, 14, 37, 13];
+  let arr = [29, 10, 14, 37, 13,14];
 
   for (let i = 1; i < arr.length; i++) {
     for (let j = i; j > 0; j--) {
