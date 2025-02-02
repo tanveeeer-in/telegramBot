@@ -15,7 +15,7 @@ function insertionSorting() {
 insertionSorting();
 
 function ReverseBubble() {
-  let arr = [3, 1, 9, 4, 2, 5];
+  let arr = [3, 1, 9, 4, 2, ,7,5];
   for (let i = 0; i < arr.length; i++) {
     for (let j = 0; j < arr.length - i - 1; j++) {
       if (arr[j] < arr[j + 1]) {
