@@ -10,4 +10,4 @@ function selectionSorting(arr) {
   }
   return arr;
 }
-console.log(selectionSorting([64, 334, 25,13, 122, 22, 10,11, 90,21,67]));
+console.log(selectionSorting([64, 334, 25,113, 122, 22, 10,11, 90,21,67]));
