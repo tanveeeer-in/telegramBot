@@ -20,4 +20,4 @@ function firstRepeatingElementWithSet(arr) {
   }
   return "No repeating element";
 }
-console.log(firstRepeatingElementWithSet([10, 52, 30,22 ,33, 4, 3, 5, 6]));
+/console.log(firstRepeatingElementWithSet([10, 52, 30,22 ,33, 4, 3, 5, 6]));
