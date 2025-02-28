@@ -4,7 +4,7 @@ function findmissingNumber(arr, n) {
       return i + 1;
     }
   }
-  return "No number is missing";
+  return "No number is missing!";
 }
 
 // console.log(findmissingNumber([1, 2, 3, 5,6,7,8,9,10,11], 5));
