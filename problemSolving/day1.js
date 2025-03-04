@@ -6,7 +6,7 @@ function linearSearch(arr, tar) {
   }
   return "Targetd value is not in given array";
 }
- console.log(linearSearch([10, 20, 30, 40, 50], 60));
+// console.log(linearSearch([10, 20, 30, 40, 50], 60));
 
 // function binarySearch(arr1, tar1) {
 //   const arr = [2, 4, 6, 7, 8, 10, 12];
