@@ -6,5 +6,4 @@ function findmissingNumber(arr, n) {
   }
   return "No number is missing!";
 }
-
-// console.log(findmissingNumber([1, 2, 3, 5,6,7,8,9,10,11], 5));
+console.log(findmissingNumber([1, 2, 3, 5,6,7,8,9,10,11], 5));
