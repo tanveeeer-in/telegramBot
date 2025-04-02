@@ -11,4 +11,4 @@ function findDuplication(arr) {
 
   return duplicate;
 } 
- console.log(findDuplication([4, 3, 2, 7, 8, 2,2, 3,3, 2, 2, 1]));
+ // console.log(findDuplication([4, 3, 2, 7, 8, 2,2, 3,3, 2, 2, 1]));
