@@ -27,7 +27,7 @@ function linearSearch(arr, tar) {
 
 //     }
 //   }
-//   console.log("there is no value");
+   console.log("there is no value");
 //   return;
 // }
 
