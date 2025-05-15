@@ -52,4 +52,4 @@ function binarySearch(arr, high, low, tar) {
 let arr = [2, 4, 6, 8, 10, 12];
 let high = arr.length - 1;
 let low = 0;
-binarySearch(arr, high, low, 112);
+// binarySearch(arr, high, low, 112);
